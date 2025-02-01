@@ -11,8 +11,11 @@
 		notes: ''
 	};
 
+	let error: string | null = null;
+
 	const handleStartSession = async (event: SubmitEvent) => {
 		event.preventDefault();
+		error = null;
 
 		try {
 			const response = await fetch('/api/sessions', {
@@ -29,9 +32,8 @@
 
 			const session = await response.json();
 			goto(`/session/${session.id}`);
-		} catch (error) {
-			console.error('Error creating session:', error);
-			// You might want to show an error message to the user here
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'Failed to create session';
 		}
 	};
 
@@ -107,6 +109,9 @@
 							</svg>
 						</button>
 					</div>
+					{#if error}
+						<p class="mb-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+					{/if}
 					<form on:submit={handleStartSession} class="space-y-4">
 						<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 							<div>

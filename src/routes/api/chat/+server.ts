@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import OpenAI from 'openai';
 import { db } from '$lib/db';
-import { teaSessions, messages } from '$lib/db/schema';
+import { teaSessions, messages, threadTeaSessions } from '$lib/db/schema';
 import { OPENAI_API_KEY, OPENAI_ASSISTANT_ID } from '$env/static/private';
 import type { TeaSession } from '$lib/stores/chatStore';
 
@@ -19,145 +19,107 @@ const openai = new OpenAI({
   apiKey: OPENAI_API_KEY
 });
 
-// Debug log for assistant ID
-console.log('Using Assistant ID:', OPENAI_ASSISTANT_ID);
-
 export const POST: RequestHandler = async ({ request }) => {
   try {
-    console.log('Starting chat request processing...');
-
-    const { message: initialMessage, threadId, teaSession } = await request.json() as {
+    const { message: initialMessage, threadId, teaSessionId } = await request.json() as {
       message: string;
       threadId: string;
-      teaSession?: TeaSession;
+      teaSessionId?: string;
     };
 
-    console.log('Received request:', { threadId, hasTeaSession: !!teaSession });
+    let teaSession: TeaSession | null = null;
 
-    let currentMessage = initialMessage;
+    if (teaSessionId) {
+      teaSession = await db.query.teaSessions.findFirst({
+        where: eq(teaSessions.id, teaSessionId)
+      });
+    }
 
-    // Store user message in database
-    await db.insert(messages).values({
-      content: currentMessage,
+    // Store the user's message in the database
+    const userMessage = await db.insert(messages).values({
       role: 'user',
-      threadId,
-      createdAt: new Date()
+      content: initialMessage,
+      threadId: threadId || null
     });
 
-    console.log('Stored user message in database');
-
-    // If no existing thread, create one and handle tea session
-    let thread;
-    if (threadId === 'default') {
-      console.log('Creating new thread...');
+    let thread: OpenAI.Beta.Threads.Thread;
+    
+    if (!threadId) {
       thread = await openai.beta.threads.create();
-      console.log('Created new thread:', thread.id);
-
-      // If tea session info is provided, store it and include in initial message
+      
       if (teaSession) {
-        console.log('Storing tea session:', teaSession);
-        await db.insert(teaSessions).values({
+        await db.insert(threadTeaSessions).values({
           threadId: thread.id,
-          teaType: teaSession.teaType,
-          teaStyle: teaSession.teaStyle,
-          brewingTemp: teaSession.brewingTemp,
-          steepTime: teaSession.steepTime,
-          notes: teaSession.notes,
-          createdAt: new Date()
+          teaSessionId: teaSession.id
         });
-
-        // Enhance the first message with tea context
-        const teaContext = `I am drinking ${teaSession.teaType} tea (${teaSession.teaStyle} style)` +
-          (teaSession.brewingTemp ? ` brewed at ${teaSession.brewingTemp}°C` : '') +
-          (teaSession.steepTime ? ` for ${teaSession.steepTime} seconds` : '') +
-          (teaSession.notes ? `. Additional notes: ${teaSession.notes}` : '') +
-          '. ';
-
-        currentMessage = teaContext + currentMessage;
-        console.log('Enhanced message with tea context:', currentMessage);
       }
     } else {
       thread = { id: threadId };
-      console.log('Using existing thread:', threadId);
     }
 
-    // Add the user's message to the thread
-    console.log('Adding message to thread...');
-    await openai.beta.threads.messages.create(thread.id, {
-      role: 'user',
-      content: currentMessage
-    });
-    console.log('Message added to thread');
+    let currentMessage = initialMessage;
+    if (teaSession) {
+      currentMessage = `Context: This conversation is about a tea session with the following details:
+Tea Type: ${teaSession.teaType}
+Tea Style: ${teaSession.teaStyle}
+${teaSession.brewingTemp ? `Brewing Temperature: ${teaSession.brewingTemp}°C` : ''}
+${teaSession.steepTime ? `Steep Time: ${teaSession.steepTime} seconds` : ''}
+${teaSession.notes ? `Notes: ${teaSession.notes}` : ''}
 
-    // Run the assistant
-    console.log('Starting assistant run with ID:', OPENAI_ASSISTANT_ID);
-    try {
-      const run = await openai.beta.threads.runs.create(thread.id, {
-        assistant_id: OPENAI_ASSISTANT_ID
-      });
-      console.log('Created run:', run.id);
-
-      // Wait for the assistant to complete its response
-      let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-      console.log('Initial run status:', runStatus.status);
-
-      while (runStatus.status === 'in_progress' || runStatus.status === 'queued') {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-        console.log('Updated run status:', runStatus.status);
-      }
-
-      if (runStatus.status === 'completed') {
-        // Get the assistant's response
-        console.log('Run completed, fetching messages...');
-        const threads = await openai.beta.threads.messages.list(thread.id);
-        const lastMessage = threads.data[0];
-
-        if (lastMessage.role === 'assistant') {
-          console.log('Received assistant response', lastMessage.content[0].text.value);
-          // Store assistant message in database
-          await db.insert(messages).values({
-            content: lastMessage.content[0].text.value,
-            role: 'assistant',
-            threadId: thread.id,
-            createdAt: new Date()
-          });
-
-          return json({
-            message: lastMessage.content[0].text.value,
-            threadId: thread.id
-          });
-        }
-      } else {
-        console.error('Run failed or timed out:', runStatus);
-        throw new Error(`Assistant run failed with status: ${runStatus.status}`);
-      }
-    } catch (error: any) {
-      console.error('Error in OpenAI API call:', {
-        error: error.message,
-        details: error.response?.data || error
-      });
-      throw error;
+User Message: ${initialMessage}`;
     }
 
-    throw new Error('Failed to get response from assistant');
-  } catch (error: any) {
-    console.error('Error in chat endpoint:', {
-      error: error.message,
-      details: error.response?.data || error
-    });
-    return new Response(
-      JSON.stringify({
-        error: 'Error processing chat message',
-        details: error.message,
-        response: error.response?.data
-      }),
+    const messageResponse = await openai.beta.threads.messages.create(
+      threadId || thread.id,
       {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        role: 'user',
+        content: currentMessage
       }
     );
+
+    const run = await openai.beta.threads.runs.create(threadId || thread.id, {
+      assistant_id: OPENAI_ASSISTANT_ID
+    });
+
+    let runStatus = await openai.beta.threads.runs.retrieve(
+      threadId || thread.id,
+      run.id
+    );
+
+    while (runStatus.status === 'in_progress' || runStatus.status === 'queued') {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      runStatus = await openai.beta.threads.runs.retrieve(
+        threadId || thread.id,
+        run.id
+      );
+    }
+
+    if (runStatus.status === 'completed') {
+      const messages = await openai.beta.threads.messages.list(
+        threadId || thread.id
+      );
+      const lastMessage = messages.data[0];
+
+      if (lastMessage) {
+        await db.insert(messages).values({
+          role: 'assistant',
+          content: lastMessage.content[0].text.value,
+          threadId: threadId || thread.id
+        });
+
+        return json({
+          message: lastMessage.content[0].text.value,
+          threadId: threadId || thread.id
+        });
+      }
+    } else {
+      console.error('Run failed or timed out:', runStatus);
+      throw new Error('Failed to get response from assistant');
+    }
+  } catch (error) {
+    console.error('Error in chat endpoint:', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    return json({ error: 'Internal server error' }, { status: 500 });
   }
 };

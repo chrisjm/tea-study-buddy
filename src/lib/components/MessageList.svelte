@@ -33,14 +33,13 @@
     scrollToBottom();
   });
 
-  const parseMarkdown = (content: string) => {
+  function formatMessage(content: string) {
     try {
-      return marked(content, {
+      return marked.parse(content, {
         breaks: true,
         gfm: true
       });
-    } catch (error) {
-      console.error('Error parsing markdown:', error);
+    } catch {
       return content;
     }
   };
@@ -66,7 +65,7 @@
         >
           {#if message.role === 'assistant'}
             <div class="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-pre:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-headings:text-gray-900 dark:prose-headings:text-white prose-a:text-blue-600 dark:prose-a:text-blue-400">
-              {@html parseMarkdown(message.content)}
+              {@html formatMessage(message.content)}
             </div>
           {:else}
             <div class="whitespace-pre-wrap">{message.content}</div>
