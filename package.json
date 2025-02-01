@@ -53,6 +53,7 @@
 		"@libsql/client": "^0.14.0",
 		"dotenv": "^16.4.7",
 		"drizzle-orm": "^0.38.4",
+		"marked": "^15.0.6",
 		"openai": "^4.82.0"
 	}
 }

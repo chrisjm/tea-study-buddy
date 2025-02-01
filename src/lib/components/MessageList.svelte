@@ -1,12 +1,25 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { ChatMessage } from '$lib/stores/chatStore';
-  
+  import { marked } from 'marked';
+
   export let messages: ChatMessage[] = [];
   export let isLoading = false;
-  
+
   let chatContainer: HTMLDivElement;
-  
+
+  const parseMarkdown = (content: string) => {
+    try {
+      return marked(content, {
+        breaks: true,
+        gfm: true
+      });
+    } catch (error) {
+      console.error('Error parsing markdown:', error);
+      return content;
+    }
+  };
+
   $: if (chatContainer && messages.length) {
     setTimeout(() => {
       chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -30,7 +43,13 @@
           ? 'bg-blue-500 text-white'
           : 'bg-gray-100 text-gray-800'}"
       >
-        {message.content}
+        {#if message.role === 'assistant'}
+          <div class="prose prose-sm max-w-none prose-headings:text-gray-800 prose-p:text-gray-800 prose-strong:text-gray-800 prose-ul:text-gray-800 prose-ol:text-gray-800 prose-li:my-0 prose-p:my-1 prose-pre:my-2 prose-ul:my-1 prose-ol:my-1">
+            {@html parseMarkdown(message.content)}
+          </div>
+        {:else}
+          {message.content}
+        {/if}
       </div>
     </div>
   {/each}
