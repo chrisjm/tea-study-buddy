@@ -1,38 +1,94 @@
-# sv
+# Tea Study Buddy
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A SvelteKit application that helps tea enthusiasts track and learn about their tea sessions with an interactive chat interface.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Interactive chat interface for tea sessions
+- Tea session tracking and management
+- Real-time session information display
+- Responsive and accessible design
+- TypeScript support for enhanced development experience
 
-```bash
-# create a new project in the current directory
-npx sv create
+## Tech Stack
 
-# create a new project in my-app
-npx sv create my-app
+- **Frontend Framework**: SvelteKit 2.x (Svelte 4.x)
+- **Language**: TypeScript 5.x
+- **Build Tool**: Vite 5.x
+- **Package Manager**: PNPM 8.x
+- **Node.js Version**: 18.x or later
+- **Styling**: TailwindCSS
+
+## Project Structure
+
+```
+src/
+├── lib/
+│   ├── components/        # Reusable Svelte components
+│   │   ├── Chat.svelte
+│   │   ├── MessageInput.svelte
+│   │   ├── MessageList.svelte
+│   │   ├── TeaSessionInfo.svelte
+│   │   └── TeaSessionList.svelte
+│   ├── db/               # Database related code
+│   ├── server/           # Server-side functionality
+│   ├── stores/           # Svelte stores for state management
+│   └── types.ts          # TypeScript type definitions
+├── routes/
+│   ├── api/             # API endpoints
+│   ├── session/         # Session related routes
+│   ├── +layout.svelte   # Root layout
+│   └── +page.svelte     # Main page
+└── app.html             # HTML template
 ```
 
-## Developing
+## Getting Started
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+1. **Prerequisites**
+   - Node.js 18.x or later
+   - PNPM 8.x or later
 
-```bash
-npm run dev
+2. **Installation**
+   ```bash
+   pnpm install
+   ```
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+3. **Development**
+   ```bash
+   # Start development server
+   pnpm dev
 
-## Building
+   # Start with browser open
+   pnpm dev -- --open
+   ```
 
-To create a production version of your app:
+4. **Building**
+   ```bash
+   # Create production build
+   pnpm build
 
-```bash
-npm run build
-```
+   # Preview production build
+   pnpm preview
+   ```
 
-You can preview the production build with `npm run preview`.
+## Development Guidelines
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+- Use TypeScript for all new code
+- Follow the component structure in `src/lib/components`
+- Utilize Svelte stores for state management
+- Implement proper TypeScript types for all components and functions
+- Use TailwindCSS for styling
+- Ensure accessibility features are implemented
+- Write tests for new functionality
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
