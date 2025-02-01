@@ -7,6 +7,31 @@
   export let isLoading = false;
 
   let chatContainer: HTMLDivElement;
+  let previousMessagesLength = 0;
+  let shouldAutoScroll = true;
+
+  const handleScroll = () => {
+    if (!chatContainer) return;
+    const { scrollTop, scrollHeight, clientHeight } = chatContainer;
+    // Consider "near bottom" if within 100px of the bottom
+    shouldAutoScroll = scrollHeight - scrollTop - clientHeight < 100;
+  };
+
+  const scrollToBottom = () => {
+    if (!chatContainer) return;
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  };
+
+  $: if (chatContainer && messages.length > previousMessagesLength && shouldAutoScroll) {
+    setTimeout(() => {
+      scrollToBottom();
+      previousMessagesLength = messages.length;
+    }, 0);
+  }
+
+  onMount(() => {
+    scrollToBottom();
+  });
 
   const parseMarkdown = (content: string) => {
     try {
@@ -19,12 +44,6 @@
       return content;
     }
   };
-
-  $: if (chatContainer && messages.length) {
-    setTimeout(() => {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }, 0);
-  }
 </script>
 
 <div
@@ -32,6 +51,7 @@
   class="flex-1 space-y-4 overflow-y-auto rounded-lg bg-white p-4 shadow-inner"
   role="log"
   aria-label="Chat messages"
+  on:scroll={handleScroll}
 >
   {#each messages as message}
     <div
