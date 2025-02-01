@@ -32,7 +32,7 @@ interface TeaSession {
 export const POST: RequestHandler = async ({ request }) => {
   try {
     console.log('Starting chat request processing...');
-    
+
     const { message: initialMessage, threadId, teaSession } = await request.json() as {
       message: string;
       threadId: string;
@@ -156,7 +156,7 @@ export const POST: RequestHandler = async ({ request }) => {
         details: error.message,
         response: error.response?.data
       }),
-      { 
+      {
         status: 500,
         headers: {
           'Content-Type': 'application/json'
