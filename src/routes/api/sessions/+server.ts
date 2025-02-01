@@ -9,16 +9,16 @@ export const GET: RequestHandler = async () => {
     const sessions = await db
       .select()
       .from(teaSessions)
-      .orderBy(desc(teaSessions.created_at));
+      .orderBy(desc(teaSessions.createdAt));
 
     return json(sessions.map(session => ({
       id: session.id.toString(),
-      thread_id: session.threadId,
-      created_at: session.created_at.toISOString(),
-      tea_type: session.teaType,
-      tea_style: session.teaStyle,
-      brewing_temp: session.brewingTemp,
-      steep_time: session.steepTime,
+      threadId: session.threadId,
+      createdAt: session.createdAt.toISOString(),
+      teaType: session.teaType,
+      teaStyle: session.teaStyle,
+      brewingTemp: session.brewingTemp,
+      steepTime: session.steepTime,
       notes: session.notes
     })));
   } catch (error) {
@@ -34,21 +34,20 @@ export const POST: RequestHandler = async ({ request }) => {
     const newSession = await db
       .insert(teaSessions)
       .values({
-        // TODO: Handle this better
-        threadId: new Date().toISOString(),
+        threadId: body.threadId,
         teaType: body.teaType,
         teaStyle: body.teaStyle,
         brewingTemp: body.brewingTemp || null,
         steepTime: body.steepTime || null,
         notes: body.notes || null,
-        created_at: new Date()
+        createdAt: new Date()
       })
       .returning();
 
     return json({
       id: newSession[0].id.toString(),
       threadId: newSession[0].threadId,
-      created_at: newSession[0].created_at.toISOString(),
+      createdAt: newSession[0].createdAt.toISOString(),
       teaType: newSession[0].teaType,
       teaStyle: newSession[0].teaStyle,
       brewingTemp: newSession[0].brewingTemp,

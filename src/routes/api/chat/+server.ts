@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 import { db } from '$lib/db';
 import { teaSessions, messages } from '$lib/db/schema';
 import { OPENAI_API_KEY, OPENAI_ASSISTANT_ID } from '$env/static/private';
+import type { TeaSession } from '$lib/stores/chatStore';
 
 // Validate environment variables
 if (!OPENAI_API_KEY) {
@@ -20,14 +21,6 @@ const openai = new OpenAI({
 
 // Debug log for assistant ID
 console.log('Using Assistant ID:', OPENAI_ASSISTANT_ID);
-
-interface TeaSession {
-  teaType: string;
-  teaStyle: string;
-  brewingTemp?: number;
-  steepTime?: number;
-  notes?: string;
-}
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
@@ -47,7 +40,8 @@ export const POST: RequestHandler = async ({ request }) => {
     await db.insert(messages).values({
       content: currentMessage,
       role: 'user',
-      threadId
+      threadId,
+      createdAt: new Date()
     });
 
     console.log('Stored user message in database');
@@ -68,7 +62,8 @@ export const POST: RequestHandler = async ({ request }) => {
           teaStyle: teaSession.teaStyle,
           brewingTemp: teaSession.brewingTemp,
           steepTime: teaSession.steepTime,
-          notes: teaSession.notes
+          notes: teaSession.notes,
+          createdAt: new Date()
         });
 
         // Enhance the first message with tea context
@@ -119,12 +114,13 @@ export const POST: RequestHandler = async ({ request }) => {
         const lastMessage = threads.data[0];
 
         if (lastMessage.role === 'assistant') {
-          console.log('Received assistant response');
+          console.log('Received assistant response', lastMessage.content[0].text.value);
           // Store assistant message in database
           await db.insert(messages).values({
             content: lastMessage.content[0].text.value,
             role: 'assistant',
-            threadId: thread.id
+            threadId: thread.id,
+            createdAt: new Date()
           });
 
           return json({
