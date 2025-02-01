@@ -7,7 +7,7 @@
 
   export let teaSession: TeaSession | null = null;
 
-  let { messages, isLoading, threadId } = $chatStore;
+  $: ({ messages, isLoading, threadId } = $chatStore);
 
   const handleSubmit = async (message: string) => {
     chatStore.setLoading(true);
@@ -19,8 +19,8 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message,
-          threadId,
-          ...(threadId === 'default' && teaSession ? { teaSession } : {})
+          threadId: teaSession?.threadId || 'default',
+          ...((!teaSession?.threadId || teaSession?.threadId === 'default') && teaSession ? { teaSession } : {})
         })
       });
 
@@ -41,14 +41,16 @@
   };
 
   const loadThread = async () => {
-    if (!threadId || threadId === 'default') return;
+    const currentThreadId = teaSession?.threadId;
+    if (!currentThreadId || currentThreadId === 'default') return;
 
     chatStore.setLoading(true);
     try {
-      const response = await fetch(`/v1/threads/${threadId}`);
+      const response = await fetch(`/api/threads/${currentThreadId}`);
       if (!response.ok) throw new Error('Failed to fetch thread');
-      const thread = await response.json();
-      chatStore.setMessages(thread.messages);
+      const data = await response.json();
+      chatStore.setThreadId(currentThreadId);
+      chatStore.setMessages(data.messages);
     } catch (error) {
       console.error('Error loading thread:', error);
     } finally {
