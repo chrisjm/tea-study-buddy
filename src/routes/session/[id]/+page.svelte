@@ -39,7 +39,7 @@
   <header class="mb-6 flex items-center justify-between">
     <button
       on:click={handleBack}
-      class="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+      class="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
       aria-label="Back to sessions"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -51,28 +51,28 @@
 
   {#if isLoading}
     <div class="flex-1 flex items-center justify-center">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 dark:border-emerald-400"></div>
     </div>
   {:else if error}
     <div class="flex-1 flex items-center justify-center">
-      <div class="text-red-500 text-center">
+      <div class="text-red-500 dark:text-red-400 text-center">
         <p class="mb-4">{error}</p>
         <button
           on:click={handleBack}
-          class="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
         >
           Return to Sessions
         </button>
       </div>
     </div>
   {:else if session}
-    <div class="flex-1 flex flex-col bg-white rounded-lg shadow-lg overflow-hidden">
-      <div class="border-b border-gray-200 p-4 bg-gray-50">
-        <h1 class="text-xl font-semibold text-gray-900">{session.teaType} Tea Session</h1>
-        <div class="mt-1 flex items-center text-sm text-gray-500 space-x-4">
+    <div class="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-colors duration-200">
+      <div class="border-b border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800">
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{session.teaType} Tea Session</h1>
+        <div class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400 space-x-4">
           <span>{session.teaStyle}</span>
           {#if session.brewingTemp || session.steepTime}
-            <span class="text-gray-300">|</span>
+            <span class="text-gray-300 dark:text-gray-600">|</span>
             <span>
               {#if session.brewingTemp}
                 {session.brewingTemp}°C
@@ -87,7 +87,7 @@
           {/if}
         </div>
         {#if session.notes}
-          <p class="mt-2 text-sm text-gray-600">{session.notes}</p>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{session.notes}</p>
         {/if}
       </div>
 

@@ -66,8 +66,10 @@
   });
 </script>
 
-<div class="flex h-full flex-col gap-4 p-4">
+<div class="flex flex-col h-full bg-white dark:bg-gray-800 transition-colors duration-200">
   <TeaSessionInfo {teaSession} />
   <MessageList {messages} {isLoading} />
-  <MessageInput {isLoading} onSubmit={handleSubmit} />
+  <div class="border-t border-gray-200 dark:border-gray-700 p-4">
+    <MessageInput {isLoading} onSubmit={handleSubmit} />
+  </div>
 </div>

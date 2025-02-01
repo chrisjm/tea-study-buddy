@@ -6,20 +6,32 @@
 
 {#if teaSession}
   <div 
-    class="rounded-lg bg-green-50 p-4 text-sm text-green-800"
+    class="rounded-lg bg-gray-50 dark:bg-gray-800 p-4 shadow-sm transition-colors duration-200"
     role="region"
     aria-label="Tea session information"
   >
-    <p class="font-medium">Current Tea Session</p>
-    <p>Type: {teaSession.teaType} ({teaSession.teaStyle} style)</p>
-    {#if teaSession.brewingTemp}
-      <p>Brewing Temperature: {teaSession.brewingTemp}°C</p>
-    {/if}
-    {#if teaSession.steepTime}
-      <p>Steep Time: {teaSession.steepTime} seconds</p>
-    {/if}
-    {#if teaSession.notes}
-      <p>Notes: {teaSession.notes}</p>
-    {/if}
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+      {teaSession.teaType} Tea
+    </h2>
+    <div class="space-y-1 text-sm">
+      <p class="text-gray-600 dark:text-gray-400">Style: {teaSession.teaStyle}</p>
+      {#if teaSession.brewingTemp || teaSession.steepTime}
+        <p class="text-gray-600 dark:text-gray-400">
+          Brewing: 
+          {#if teaSession.brewingTemp}
+            {teaSession.brewingTemp}°C
+          {/if}
+          {#if teaSession.brewingTemp && teaSession.steepTime}
+            •
+          {/if}
+          {#if teaSession.steepTime}
+            {teaSession.steepTime}s
+          {/if}
+        </p>
+      {/if}
+      {#if teaSession.notes}
+        <p class="text-gray-600 dark:text-gray-400">Notes: {teaSession.notes}</p>
+      {/if}
+    </div>
   </div>
 {/if}
