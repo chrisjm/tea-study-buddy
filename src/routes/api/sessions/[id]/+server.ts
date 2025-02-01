@@ -18,12 +18,12 @@ export const GET: RequestHandler = async ({ params }) => {
 
     return json({
       id: session[0].id.toString(),
-      threadId: session[0].threadId,
+      thread_id: session[0].threadId,
       created_at: session[0].created_at.toISOString(),
-      teaType: session[0].teaType,
-      teaStyle: session[0].teaStyle,
-      brewingTemp: session[0].brewingTemp,
-      steepTime: session[0].steepTime,
+      tea_type: session[0].teaType,
+      tea_style: session[0].teaStyle,
+      brewing_temp: session[0].brewingTemp,
+      steep_time: session[0].steepTime,
       notes: session[0].notes
     });
   } catch (error) {

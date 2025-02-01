@@ -13,7 +13,11 @@
     try {
       const response = await fetch(`/api/sessions/${$page.params.id}`);
       if (!response.ok) throw new Error('Failed to fetch session');
-      session = await response.json();
+      const data = await response.json();
+      session = {
+        ...data,
+        thread_id: data.thread_id
+      };
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to load session';
       console.error('Error loading session:', e);
@@ -82,7 +86,7 @@
           <p class="mt-2 text-sm text-gray-600">{session.notes}</p>
         {/if}
       </div>
-      
+
       <div class="flex-1 overflow-hidden">
         <Chat teaSession={session} />
       </div>

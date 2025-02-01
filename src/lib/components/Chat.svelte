@@ -1,17 +1,19 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   export let teaSession: {
     teaType: string;
     teaStyle: string;
     brewingTemp?: number;
     steepTime?: number;
     notes?: string;
+    threadId?: string;
   } | null = null;
 
   let messages: { role: 'user' | 'assistant'; content: string }[] = [];
   let inputMessage = '';
   let chatContainer: HTMLDivElement;
   let isLoading = false;
-  let threadId = 'default';
+  let threadId = teaSession?.threadId || 'default';
 
   const handleSubmit = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -45,6 +47,26 @@
       isLoading = false;
     }
   };
+
+  const loadThread = async () => {
+    if (!threadId || threadId === 'default') return;
+
+    isLoading = true;
+    try {
+      const response = await fetch(`/v1/threads/${threadId}`);
+      if (!response.ok) throw new Error('Failed to fetch thread');
+      const thread = await response.json();
+      messages = thread.messages;
+    } catch (error) {
+      console.error('Error loading thread:', error);
+    } finally {
+      isLoading = false;
+    }
+  };
+
+  onMount(() => {
+    loadThread();
+  });
 
   $: if (chatContainer && messages.length) {
     setTimeout(() => {

@@ -13,12 +13,12 @@ export const GET: RequestHandler = async () => {
 
     return json(sessions.map(session => ({
       id: session.id.toString(),
-      threadId: session.threadId,
+      thread_id: session.threadId,
       created_at: session.created_at.toISOString(),
-      teaType: session.teaType,
-      teaStyle: session.teaStyle,
-      brewingTemp: session.brewingTemp,
-      steepTime: session.steepTime,
+      tea_type: session.teaType,
+      tea_style: session.teaStyle,
+      brewing_temp: session.brewingTemp,
+      steep_time: session.steepTime,
       notes: session.notes
     })));
   } catch (error) {
