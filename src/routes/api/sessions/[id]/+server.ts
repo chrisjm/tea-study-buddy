@@ -22,6 +22,7 @@ export const GET: RequestHandler = async ({ params }) => {
     }
 
     const teaSession: TeaSession = {
+      id: session[0].id,
       teaType: session[0].teaType,
       teaStyle: session[0].teaStyle,
       brewingTemp: session[0].brewingTemp ?? undefined,
@@ -31,7 +32,6 @@ export const GET: RequestHandler = async ({ params }) => {
     };
 
     return json({
-      id: session[0].id.toString(),
       createdAt: session[0].createdAt.toISOString(),
       ...teaSession
     });

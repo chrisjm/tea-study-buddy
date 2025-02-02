@@ -15,7 +15,8 @@
 			if (!response.ok) throw new Error('Failed to fetch session');
 			const data = await response.json();
 			session = {
-				teaType: data.teaType,
+        id: data.id,
+        teaType: data.teaType,
 				teaStyle: data.teaStyle,
 				brewingTemp: data.brewingTemp,
 				steepTime: data.steepTime,

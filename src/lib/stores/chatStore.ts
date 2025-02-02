@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 
 export interface TeaSession {
+  id: number;
   teaType: string;
   teaStyle: string;
   brewingTemp?: number;
@@ -29,7 +30,7 @@ function createChatStore() {
 
   return {
     subscribe,
-    setMessages: (messages: ChatMessage[]) => 
+    setMessages: (messages: ChatMessage[]) =>
       update(state => ({ ...state, messages })),
     addMessage: (message: ChatMessage) =>
       update(state => ({ ...state, messages: [...state.messages, message] })),

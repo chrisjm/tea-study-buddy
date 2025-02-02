@@ -22,10 +22,10 @@ const openai = new OpenAI({
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
-    const { message: initialMessage, threadId, teaSessionId } = await request.json() as {
+    let { message: initialMessage, threadId, teaSessionId } = await request.json() as {
       message: string;
       threadId: string;
-      teaSessionId?: string;
+      teaSessionId?: number;
     };
 
     let teaSession: TeaSession | null = null;
@@ -46,8 +46,9 @@ export const POST: RequestHandler = async ({ request }) => {
 
     let thread: OpenAI.Beta.Threads.Thread;
 
-    if (!threadId) {
+    if (!threadId || threadId === 'default') {
       thread = await openai.beta.threads.create();
+      threadId = thread.id;
 
       if (teaSession) {
         // Update the tea session with the new thread ID
@@ -56,7 +57,11 @@ export const POST: RequestHandler = async ({ request }) => {
           .where(eq(teaSessions.id, teaSession.id));
       }
     } else {
-      thread = await openai.beta.threads.retrieve(threadId);
+      try {
+        thread = await openai.beta.threads.retrieve(threadId);
+      } catch (error) {
+        throw error;
+      }
     }
 
     let currentMessage = initialMessage;

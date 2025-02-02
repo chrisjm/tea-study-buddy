@@ -48,17 +48,18 @@
 	};
 
 	const loadThread = async () => {
-		const currentThreadId = teaSession?.threadId;
-		if (!currentThreadId || currentThreadId === 'default') return;
+		if (!teaSession) return;
 
 		try {
 			chatStore.setLoading(true);
-			const response = await fetch(`/api/threads/${currentThreadId}`);
+			const response = await fetch(`/api/threads/${teaSession.id}`);
 			if (!response.ok) {
 				throw new Error('Failed to load chat history');
 			}
 			const data = await response.json();
-			chatStore.setThreadId(currentThreadId);
+			if (data.threadId) {
+				chatStore.setThreadId(data.threadId);
+			}
 			chatStore.setMessages(data.messages);
 		} catch (err) {
 			error =
