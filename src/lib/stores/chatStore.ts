@@ -4,10 +4,10 @@ export interface TeaSession {
   id: number;
   teaType: string;
   teaStyle: string;
-  brewingTemp?: number;
-  steepTime?: number;
-  notes?: string;
-  threadId?: string;
+  brewingTemp?: number | null;
+  steepTime?: number | null;
+  notes?: string | null;
+  threadId?: string | null;
 }
 
 export interface ChatMessage {

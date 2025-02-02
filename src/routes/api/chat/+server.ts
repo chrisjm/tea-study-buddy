@@ -28,7 +28,7 @@ export const POST: RequestHandler = async ({ request }) => {
       teaSessionId?: number;
     };
 
-    let teaSession: TeaSession | null = null;
+    let teaSession: TeaSession | undefined;
 
     if (teaSessionId) {
       teaSession = await db.query.teaSessions.findFirst({
