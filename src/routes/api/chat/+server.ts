@@ -2,9 +2,10 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import OpenAI from 'openai';
 import { db } from '$lib/db';
-import { teaSessions, messages, threadTeaSessions } from '$lib/db/schema';
+import { teaSessions, messages } from '$lib/db/schema';
 import { OPENAI_API_KEY, OPENAI_ASSISTANT_ID } from '$env/static/private';
 import type { TeaSession } from '$lib/stores/chatStore';
+import { eq } from 'drizzle-orm/sqlite-core/expressions';
 
 // Validate environment variables
 if (!OPENAI_API_KEY) {
@@ -36,25 +37,26 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     // Store the user's message in the database
-    const userMessage = await db.insert(messages).values({
+    await db.insert(messages).values({
       role: 'user',
       content: initialMessage,
-      threadId: threadId || null
+      threadId: threadId || null,
+      createdAt: new Date()
     });
 
     let thread: OpenAI.Beta.Threads.Thread;
-    
+
     if (!threadId) {
       thread = await openai.beta.threads.create();
-      
+
       if (teaSession) {
-        await db.insert(threadTeaSessions).values({
-          threadId: thread.id,
-          teaSessionId: teaSession.id
-        });
+        // Update the tea session with the new thread ID
+        await db.update(teaSessions)
+          .set({ threadId: thread.id })
+          .where(eq(teaSessions.id, teaSession.id));
       }
     } else {
-      thread = { id: threadId };
+      thread = await openai.beta.threads.retrieve(threadId);
     }
 
     let currentMessage = initialMessage;
@@ -69,7 +71,7 @@ ${teaSession.notes ? `Notes: ${teaSession.notes}` : ''}
 User Message: ${initialMessage}`;
     }
 
-    const messageResponse = await openai.beta.threads.messages.create(
+    await openai.beta.threads.messages.create(
       threadId || thread.id,
       {
         role: 'user',
@@ -95,16 +97,17 @@ User Message: ${initialMessage}`;
     }
 
     if (runStatus.status === 'completed') {
-      const messages = await openai.beta.threads.messages.list(
+      const threadMessages = await openai.beta.threads.messages.list(
         threadId || thread.id
       );
-      const lastMessage = messages.data[0];
+      const lastMessage = threadMessages.data[0];
 
       if (lastMessage) {
         await db.insert(messages).values({
           role: 'assistant',
           content: lastMessage.content[0].text.value,
-          threadId: threadId || thread.id
+          threadId: threadId || thread.id,
+          createdAt: new Date()
         });
 
         return json({
@@ -112,6 +115,7 @@ User Message: ${initialMessage}`;
           threadId: threadId || thread.id
         });
       }
+      return json({ error: 'No response from assistant' }, { status: 500 });
     } else {
       console.error('Run failed or timed out:', runStatus);
       throw new Error('Failed to get response from assistant');
