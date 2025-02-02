@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { teaSessions, messages } from '$lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm/sqlite-core/expressions';
 import type { TeaSession } from '$lib/stores/chatStore';
 import { OpenAI } from 'openai';
 
@@ -47,7 +47,7 @@ export const GET: RequestHandler = async ({ params }) => {
 export const DELETE: RequestHandler = async ({ params }) => {
   try {
     const sessionId = parseInt(params.id);
-    
+
     // Get the session first to get the threadId
     const session = await db
       .select()
@@ -65,9 +65,11 @@ export const DELETE: RequestHandler = async ({ params }) => {
     const threadId = session[0].threadId;
 
     // Delete associated messages
-    await db
-      .delete(messages)
-      .where(eq(messages.threadId, threadId));
+    if (threadId) {
+      await db
+        .delete(messages)
+        .where(eq(messages.threadId, threadId));
+    }
 
     // Delete the session
     await db
