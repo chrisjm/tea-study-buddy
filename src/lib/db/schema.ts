@@ -17,4 +17,5 @@ export const teaSessions = sqliteTable('tea_sessions', {
   steepTime: integer('steep_time'),
   notes: text('notes'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' })
 });

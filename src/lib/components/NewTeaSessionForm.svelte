@@ -1,15 +1,32 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import type { TeaSession } from '$lib/stores/chatStore';
 
 	export let onClose: () => void;
+	export let editMode = false;
+	export let teaSession: TeaSession | null = null;
 
 	let formData = {
+		id: null as number | null | undefined,
 		teaType: 'Oolong',
 		teaStyle: 'Alishan',
 		brewingTemp: null as number | null,
 		steepTime: null as number | null,
-		notes: ''
+		notes: '',
+		threadId: null as string | null
 	};
+
+	$: if (editMode && teaSession) {
+		formData = {
+			id: teaSession.id,
+			teaType: teaSession.teaType,
+			teaStyle: teaSession.teaStyle,
+			brewingTemp: teaSession.brewingTemp || null,
+			steepTime: teaSession.steepTime || null,
+			notes: teaSession.notes || '',
+			threadId: teaSession.threadId || null
+		};
+	}
 
 	let error: string | null = null;
 
@@ -18,8 +35,17 @@
 		error = null;
 
 		try {
-			const response = await fetch('/api/sessions', {
-				method: 'POST',
+			if (editMode && !teaSession?.id) {
+				throw new Error('Missing session ID for update');
+			}
+
+			const endpoint = editMode
+				? `/api/sessions/${teaSession?.id}`
+				: '/api/sessions';
+			const method = editMode ? 'PUT' : 'POST';
+
+			const response = await fetch(endpoint, {
+				method,
 				headers: {
 					'Content-Type': 'application/json'
 				},
@@ -27,13 +53,21 @@
 			});
 
 			if (!response.ok) {
-				throw new Error('Failed to create session');
+				throw new Error(
+					editMode ? 'Failed to update session' : 'Failed to create session'
+				);
 			}
 
 			const session = await response.json();
-			goto(`/session/${session.id}`);
+			if (!editMode) {
+				goto(`/session/${session.id}`);
+			} else {
+				onClose();
+				window.location.reload(); // Refresh to update the session data
+			}
 		} catch (err) {
-			error = err instanceof Error ? err.message : 'Failed to create session';
+			error = err instanceof Error ? err.message : 'Failed to save session';
+			console.error('Form submission error:', err);
 		}
 	};
 
@@ -52,7 +86,7 @@
 		<h2
 			class="text-xl font-semibold text-gray-900 transition-colors duration-200 dark:text-white"
 		>
-			Start a New Tea Session
+			{editMode ? 'Edit Tea Session' : 'Start a New Tea Session'}
 		</h2>
 		<button
 			on:click={onClose}
@@ -183,7 +217,7 @@
 			<button
 				type="submit"
 				class="rounded-lg bg-emerald-500 px-4 py-2 text-white transition-colors duration-200 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700"
-				>Start Session</button
+				>{editMode ? 'Save Changes' : 'Start Session'}</button
 			>
 		</div>
 	</form>
