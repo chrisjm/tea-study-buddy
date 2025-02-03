@@ -1,9 +1,10 @@
+import { eq } from 'drizzle-orm';
+import OpenAI from 'openai';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
-import { messages, teaSessions } from '$lib/db/schema';
-import { eq } from 'drizzle-orm';
-import OpenAI from 'openai';
+import { teaSessions } from '$lib/db/schema/teaSessions';
+import { messages } from '$lib/db/schema/messages';
 import { OPENAI_API_KEY } from '$env/static/private';
 
 const openai = new OpenAI({

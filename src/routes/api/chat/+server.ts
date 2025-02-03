@@ -2,7 +2,8 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import OpenAI from 'openai';
 import { db } from '$lib/db';
-import { teaSessions, messages } from '$lib/db/schema';
+import { teaSessions } from '$lib/db/schema/teaSessions';
+import { messages } from '$lib/db/schema/messages';
 import { OPENAI_API_KEY, OPENAI_ASSISTANT_ID } from '$env/static/private';
 import type { TeaSession } from '$lib/stores/chatStore';
 import { eq } from 'drizzle-orm/sqlite-core/expressions';
@@ -53,7 +54,7 @@ export const POST: RequestHandler = async ({ request }) => {
       if (teaSession) {
         // Update the tea session with the new thread ID
         await db.update(teaSessions)
-          .set({ threadId: thread.id })
+          .set({ threadId })
           .where(eq(teaSessions.id, teaSession.id));
       }
     } else {
@@ -77,33 +78,33 @@ User Message: ${initialMessage}`;
     }
 
     await openai.beta.threads.messages.create(
-      threadId || thread.id,
+      threadId,
       {
         role: 'user',
         content: currentMessage
       }
     );
 
-    const run = await openai.beta.threads.runs.create(threadId || thread.id, {
+    const run = await openai.beta.threads.runs.create(threadId, {
       assistant_id: OPENAI_ASSISTANT_ID
     });
 
     let runStatus = await openai.beta.threads.runs.retrieve(
-      threadId || thread.id,
+      threadId,
       run.id
     );
 
     while (runStatus.status === 'in_progress' || runStatus.status === 'queued') {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       runStatus = await openai.beta.threads.runs.retrieve(
-        threadId || thread.id,
+        threadId,
         run.id
       );
     }
 
     if (runStatus.status === 'completed') {
       const threadMessages = await openai.beta.threads.messages.list(
-        threadId || thread.id
+        threadId
       );
       const lastMessage = threadMessages.data[0];
 
@@ -111,13 +112,13 @@ User Message: ${initialMessage}`;
         await db.insert(messages).values({
           role: 'assistant',
           content: lastMessage.content[0].text.value,
-          threadId: threadId || thread.id,
+          threadId: threadId,
           createdAt: new Date()
         });
 
         return json({
           message: lastMessage.content[0].text.value,
-          threadId: threadId || thread.id
+          threadId: threadId
         });
       }
       return json({ error: 'No response from assistant' }, { status: 500 });

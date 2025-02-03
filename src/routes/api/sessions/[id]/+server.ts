@@ -1,10 +1,11 @@
+import { eq } from 'drizzle-orm';
+import { OpenAI } from 'openai';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
-import { teaSessions, messages } from '$lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { teaSessions } from '$lib/db/schema/teaSessions';
+import { messages } from '$lib/db/schema/messages';
 import type { TeaSession } from '$lib/stores/chatStore';
-import { OpenAI } from 'openai';
 
 export const GET: RequestHandler = async ({ params }) => {
   try {
