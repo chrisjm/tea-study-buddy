@@ -33,7 +33,7 @@ export const GET: RequestHandler = async ({ params }) => {
       createdAt: session[0].createdAt
     };
 
-    return json({ teaSession });
+    return json({ ...teaSession });
   } catch (error) {
     console.error('Error fetching tea session:', error);
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
