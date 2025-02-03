@@ -1,6 +1,6 @@
 <script lang="ts">
 	import TeaSessionList from '$lib/components/TeaSessionList.svelte';
-	import NewTeaSessionForm from '$lib/components/NewTeaSessionForm.svelte';
+	import TeaSessionForm from '$lib/components/TeaSessionForm.svelte';
 
 	let showForm = false;
 
@@ -47,7 +47,7 @@
 			</section>
 		{:else}
 			<div class="mx-auto max-w-2xl">
-				<NewTeaSessionForm onClose={handleFormToggle} />
+				<TeaSessionForm onClose={handleFormToggle} />
 			</div>
 		{/if}
 	</div>
