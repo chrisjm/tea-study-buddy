@@ -23,7 +23,7 @@ const openai = new OpenAI({
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
-    let { message: initialMessage, threadId, teaSessionId } = await request.json() as {
+    let { message: userMessage, threadId, teaSessionId } = await request.json() as {
       message: string;
       threadId: string;
       teaSessionId?: number;
@@ -40,10 +40,17 @@ export const POST: RequestHandler = async ({ request }) => {
     // Store the user's message in the database
     await db.insert(messages).values({
       role: 'user',
-      content: initialMessage,
+      content: userMessage,
       threadId: threadId || null,
       createdAt: new Date()
     });
+
+    // Update tea session after storing user message
+    if (teaSession) {
+      await db.update(teaSessions)
+        .set({ updatedAt: new Date() })
+        .where(eq(teaSessions.id, teaSession.id));
+    }
 
     let thread: OpenAI.Beta.Threads.Thread;
 
@@ -52,20 +59,30 @@ export const POST: RequestHandler = async ({ request }) => {
       threadId = thread.id;
 
       if (teaSession) {
-        // Update the tea session with the new thread ID
+        // Update the tea session with the new thread ID and updatedAt
         await db.update(teaSessions)
-          .set({ threadId })
+          .set({
+            threadId,
+            updatedAt: new Date()
+          })
           .where(eq(teaSessions.id, teaSession.id));
       }
     } else {
       try {
         thread = await openai.beta.threads.retrieve(threadId);
+
+        // Update the updatedAt timestamp for existing tea sessions
+        if (teaSession) {
+          await db.update(teaSessions)
+            .set({ updatedAt: new Date() })
+            .where(eq(teaSessions.id, teaSession.id));
+        }
       } catch (error) {
         throw error;
       }
     }
 
-    let currentMessage = initialMessage;
+    let currentMessage = userMessage;
     if (teaSession) {
       currentMessage = `Context: This conversation is about a tea session with the following details:
 Tea Type: ${teaSession.teaType}
@@ -74,7 +91,7 @@ ${teaSession.brewingTemp ? `Brewing Temperature: ${teaSession.brewingTemp}°C` :
 ${teaSession.steepTime ? `Steep Time: ${teaSession.steepTime} seconds` : ''}
 ${teaSession.notes ? `Notes: ${teaSession.notes}` : ''}
 
-User Message: ${initialMessage}`;
+User Message: ${userMessage}`;
     }
 
     await openai.beta.threads.messages.create(
@@ -88,6 +105,13 @@ User Message: ${initialMessage}`;
     const run = await openai.beta.threads.runs.create(threadId, {
       assistant_id: OPENAI_ASSISTANT_ID
     });
+
+    // Update tea session after creating run
+    if (teaSession) {
+      await db.update(teaSessions)
+        .set({ updatedAt: new Date() })
+        .where(eq(teaSessions.id, teaSession.id));
+    }
 
     let runStatus = await openai.beta.threads.runs.retrieve(
       threadId,
@@ -115,6 +139,13 @@ User Message: ${initialMessage}`;
           threadId: threadId,
           createdAt: new Date()
         });
+
+        // Update tea session after storing assistant message
+        if (teaSession) {
+          await db.update(teaSessions)
+            .set({ updatedAt: new Date() })
+            .where(eq(teaSessions.id, teaSession.id));
+        }
 
         return json({
           message: lastMessage.content[0].text.value,

@@ -23,10 +23,7 @@
 				body: JSON.stringify({
 					message,
 					threadId: teaSession?.threadId || 'default',
-					...((!teaSession?.threadId || teaSession?.threadId === 'default') &&
-					teaSession
-						? { teaSession }
-						: {})
+					teaSessionId: teaSession?.id
 				})
 			});
 
