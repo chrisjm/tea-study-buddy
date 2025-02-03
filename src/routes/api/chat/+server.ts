@@ -5,7 +5,7 @@ import { db } from '$lib/db';
 import { teaSessions } from '$lib/db/schema/teaSessions';
 import { messages } from '$lib/db/schema/messages';
 import { OPENAI_API_KEY, OPENAI_ASSISTANT_ID } from '$env/static/private';
-import type { TeaSession } from '$lib/stores/chatStore';
+import type { TeaSession } from '$lib/types';
 import { eq } from 'drizzle-orm/sqlite-core/expressions';
 
 // Validate environment variables
@@ -41,7 +41,7 @@ export const POST: RequestHandler = async ({ request }) => {
     await db.insert(messages).values({
       role: 'user',
       content: userMessage,
-      threadId: threadId || null,
+      threadId: threadId,
       createdAt: new Date()
     });
 
@@ -132,7 +132,7 @@ User Message: ${userMessage}`;
       );
       const lastMessage = threadMessages.data[0];
 
-      if (lastMessage) {
+      if (lastMessage && lastMessage.content[0].type === 'text') {
         await db.insert(messages).values({
           role: 'assistant',
           content: lastMessage.content[0].text.value,

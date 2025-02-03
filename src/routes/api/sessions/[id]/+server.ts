@@ -5,7 +5,7 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { teaSessions } from '$lib/db/schema/teaSessions';
 import { messages } from '$lib/db/schema/messages';
-import type { TeaSession } from '$lib/stores/chatStore';
+import type { TeaSession } from '$lib/types';
 
 export const GET: RequestHandler = async ({ params }) => {
   try {
@@ -29,13 +29,11 @@ export const GET: RequestHandler = async ({ params }) => {
       brewingTemp: session[0].brewingTemp ?? undefined,
       steepTime: session[0].steepTime ?? undefined,
       notes: session[0].notes ?? undefined,
-      threadId: session[0].threadId ?? undefined
+      threadId: session[0].threadId ?? undefined,
+      createdAt: session[0].createdAt
     };
 
-    return json({
-      createdAt: session[0].createdAt.toISOString(),
-      ...teaSession
-    });
+    return json({ teaSession });
   } catch (error) {
     console.error('Error fetching tea session:', error);
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
@@ -47,7 +45,7 @@ export const GET: RequestHandler = async ({ params }) => {
 
 export const PUT: RequestHandler = async ({ params, request }) => {
   try {
-    const sessionId = params.id;
+    const sessionId = parseInt(params.id);
     const updateData = await request.json();
 
     // Validate the session exists
@@ -106,14 +104,12 @@ export const PUT: RequestHandler = async ({ params, request }) => {
       brewingTemp: updatedSession[0].brewingTemp ?? undefined,
       steepTime: updatedSession[0].steepTime ?? undefined,
       notes: updatedSession[0].notes ?? undefined,
-      threadId: updatedSession[0].threadId ?? undefined
+      threadId: updatedSession[0].threadId ?? undefined,
+      updatedAt: updatedSession[0].updatedAt ?? undefined,
+      createdAt: updatedSession[0].createdAt
     };
 
-    return json({
-      createdAt: updatedSession[0].createdAt.toISOString(),
-      updatedAt: updatedSession[0].updatedAt?.toISOString(),
-      ...teaSession
-    });
+    return json({ teaSession });
   } catch (error) {
     return new Response(JSON.stringify({ error: 'Failed to update session' }), {
       status: 500,

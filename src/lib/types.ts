@@ -1,14 +1,14 @@
 // Database Models
 export interface TeaSession {
   id: number;
-  threadId: string;
+  threadId?: string | null;
   teaType: string;
   teaStyle: string;
   brewingTemp?: number | null;
   steepTime?: number | null;
   notes?: string | null;
-  createdAt: Date | string;
-  updatedAt?: Date | string | null;
+  createdAt: Date;
+  updatedAt?: Date | null;
 }
 
 export interface Message {
@@ -16,7 +16,7 @@ export interface Message {
   threadId: string;
   role: 'user' | 'assistant';
   content: string;
-  createdAt: Date | string;
+  createdAt: Date;
 }
 
 // Chat Types
@@ -58,3 +58,23 @@ export interface ThemeState {
   theme: Theme;
   systemTheme: 'light' | 'dark';
 }
+
+// OpenAI Types
+export type MessageContentType = 'text' | 'image_file';
+
+export interface TextContent {
+  type: 'text';
+  text: {
+    value: string;
+    annotations: any[];
+  };
+}
+
+export interface ImageFileContent {
+  type: 'image_file';
+  image_file: {
+    file_id: string;
+  };
+}
+
+export type MessageContent = TextContent | ImageFileContent;
