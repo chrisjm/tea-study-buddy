@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { chatStore, type TeaSession } from '$lib/stores/chatStore';
+	import { chatStore } from '$lib/stores/chatStore';
 	import TeaSessionInfo from './TeaSessionInfo.svelte';
 	import MessageList from './MessageList.svelte';
 	import MessageInput from './MessageInput.svelte';
+	import type { TeaSession } from '$lib/types';
 
 	export let teaSession: TeaSession | null = null;
 

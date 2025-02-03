@@ -1,21 +1,11 @@
 import { writable } from 'svelte/store';
 
-export interface TeaSession {
-  id: number;
-  teaType: string;
-  teaStyle: string;
-  brewingTemp?: number | null;
-  steepTime?: number | null;
-  notes?: string | null;
-  threadId?: string | null;
-}
-
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
 }
 
-interface ChatState {
+export interface ChatState {
   messages: ChatMessage[];
   isLoading: boolean;
   threadId: string;

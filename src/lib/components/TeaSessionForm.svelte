@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { TeaSession } from '$lib/stores/chatStore';
+	import type { TeaSession } from '$lib/types';
 
 	export let onClose: () => void;
 	export let editMode = false;

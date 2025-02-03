@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { TeaSession } from '$lib/stores/chatStore';
 	import TeaSessionForm from './TeaSessionForm.svelte';
+	import type { TeaSession } from '$lib/types';
 
 	export let teaSession: TeaSession | null = null;
 
