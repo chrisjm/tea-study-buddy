@@ -1,5 +1,5 @@
 export interface TeaSession {
-  id: string;
+  id: number;
   threadId: string;
   createdAt: string;
   teaType: string;

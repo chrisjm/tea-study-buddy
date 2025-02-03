@@ -8,7 +8,7 @@
 	let error: string | null = null;
 	let isDeleting = false;
 
-	const handleDelete = async (event: Event, sessionId: string) => {
+	const handleDelete = async (event: Event, sessionId: number) => {
 		event.stopPropagation();
 		if (isDeleting) return;
 
@@ -50,7 +50,7 @@
 <div class="mx-auto w-full max-w-4xl p-4">
 	{#if error}
 		<div
-			class="relative mb-4 rounded border border-red-400 bg-red-100 dark:border-red-500 dark:bg-red-900/50 px-4 py-3 text-red-700 dark:text-red-200"
+			class="relative mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700 dark:border-red-500 dark:bg-red-900/50 dark:text-red-200"
 			role="alert"
 		>
 			<span class="block sm:inline">{error}</span>
