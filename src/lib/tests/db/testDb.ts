@@ -1,6 +1,9 @@
 import { drizzle } from 'drizzle-orm/libsql';
+import { migrate } from 'drizzle-orm/libsql/migrator';
 import { createClient } from '@libsql/client';
 import { teaSessions, messages } from '$lib/db/schema';
+import { promises as fs } from 'fs';
+import { resolve } from 'path';
 
 /**
  * Creates a new test database instance with a unique file name
@@ -13,30 +16,9 @@ export async function createTestDb() {
   });
   const db = drizzle(client);
 
-  // Create tables
-  await client.execute(`
-    CREATE TABLE IF NOT EXISTS messages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      thread_id TEXT NOT NULL,
-      role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
-      content TEXT NOT NULL,
-      created_at INTEGER NOT NULL
-    );
-  `);
-
-  await client.execute(`
-    CREATE TABLE IF NOT EXISTS tea_sessions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      thread_id TEXT UNIQUE,
-      tea_type TEXT NOT NULL,
-      tea_style TEXT NOT NULL,
-      brewing_temp INTEGER,
-      steep_time INTEGER,
-      notes TEXT,
-      created_at INTEGER NOT NULL,
-      updated_at INTEGER
-    );
-  `);
+  await migrate(db, { 
+    migrationsFolder: resolve(__dirname, '../../../../drizzle')
+  });
 
   return {
     db,
@@ -44,17 +26,16 @@ export async function createTestDb() {
     cleanup: async () => {
       try {
         await client.close();
-        // Delete the database file
-        const fs = require('fs');
+        // Delete the database file and its associated files
         try {
-          fs.unlinkSync(dbName);
-          fs.unlinkSync(`${dbName}-wal`); // Delete WAL file if it exists
-          fs.unlinkSync(`${dbName}-shm`); // Delete SHM file if it exists
+          await fs.unlink(dbName);
+          await fs.unlink(`${dbName}-wal`).catch(() => { }); // Delete WAL file if it exists
+          await fs.unlink(`${dbName}-shm`).catch(() => { }); // Delete SHM file if it exists
         } catch (error) {
-          // Ignore errors if files don't exist
+          console.error('Error cleaning up test database files:', error);
         }
       } catch (error) {
-        // Ignore errors during cleanup
+        console.error('Error closing test database connection:', error);
       }
     }
   };

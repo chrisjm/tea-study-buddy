@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { TeaSession } from '$lib/stores/chatStore';
+	import type { TeaSession } from '$lib/types';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import Chat from '$lib/components/Chat.svelte';
@@ -15,13 +15,14 @@
 			if (!response.ok) throw new Error('Failed to fetch session');
 			const data = await response.json();
 			session = {
-        id: data.id,
-        teaType: data.teaType,
+				id: data.id,
+				teaType: data.teaType,
 				teaStyle: data.teaStyle,
 				brewingTemp: data.brewingTemp,
 				steepTime: data.steepTime,
 				notes: data.notes,
-				threadId: data.threadId
+				threadId: data.threadId,
+				createdAt: data.createdAt
 			};
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load session';
