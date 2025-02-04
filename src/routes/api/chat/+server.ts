@@ -86,8 +86,10 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     let currentMessage = userMessage;
-    if (teaSession) {
-      currentMessage = `Context: This conversation is about a tea session with the following details:
+    // Only send context information when creating a new thread
+    if (!threadId || threadId === 'default') {
+      if (teaSession) {
+        currentMessage = `Context: This conversation is about a tea session with the following details:
 Tea Type: ${teaSession.teaType}
 Tea Style: ${teaSession.teaStyle}
 ${teaSession.brewingTemp ? `Brewing Temperature: ${teaSession.brewingTemp}°C` : ''}
@@ -95,6 +97,7 @@ ${teaSession.steepTime ? `Steep Time: ${teaSession.steepTime} seconds` : ''}
 ${teaSession.notes ? `Notes: ${teaSession.notes}` : ''}
 
 User Message: ${userMessage}`;
+      }
     }
 
     await openai.beta.threads.messages.create(
@@ -170,12 +173,10 @@ User Message: ${userMessage}`;
       return json({ error: 'No response from assistant' }, { status: 500 });
     } else {
       console.error('Run failed or timed out:', runStatus);
-      throw new Error('Failed to get response from assistant');
+      return json({ error: 'Failed to get response from assistant' }, { status: 500 });
     }
   } catch (error) {
-    console.error('Error in chat endpoint:', {
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
+    console.error('Error in chat endpoint:', error);
     return json({ error: 'Internal server error' }, { status: 500 });
   }
 };
