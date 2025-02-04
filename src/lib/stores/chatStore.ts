@@ -3,6 +3,9 @@ import { writable } from 'svelte/store';
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  completionId?: string;
 }
 
 export interface ChatState {

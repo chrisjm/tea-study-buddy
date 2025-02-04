@@ -33,7 +33,13 @@
 			}
 
 			const data = await response.json();
-			chatStore.addMessage({ role: 'assistant', content: data.message });
+			chatStore.addMessage({
+				role: 'assistant',
+				content: data.message,
+				inputTokens: data.inputTokens,
+				outputTokens: data.outputTokens,
+				completionId: data.completionId
+			});
 			chatStore.setThreadId(data.threadId);
 		} catch (err) {
 			error =

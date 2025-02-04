@@ -37,13 +37,13 @@ export const POST: RequestHandler = async ({ request }) => {
       });
     }
 
-    // Store the user's message in the database
-    await db.insert(messages).values({
+    // Store the user's message in the database with a temporary ID
+    const userMessageResult = await db.insert(messages).values({
       role: 'user',
       content: userMessage,
       threadId: threadId,
       createdAt: new Date()
-    });
+    }).returning({ id: messages.id });
 
     // Update tea session after storing user message
     if (teaSession) {
@@ -58,15 +58,18 @@ export const POST: RequestHandler = async ({ request }) => {
       thread = await openai.beta.threads.create();
       threadId = thread.id;
 
-      if (teaSession) {
-        // Update the tea session with the new thread ID and updatedAt
-        await db.update(teaSessions)
+      // Update both the tea session and the user message with the new thread ID
+      await Promise.all([
+        teaSession && db.update(teaSessions)
           .set({
             threadId,
             updatedAt: new Date()
           })
-          .where(eq(teaSessions.id, teaSession.id));
-      }
+          .where(eq(teaSessions.id, teaSession.id)),
+        db.update(messages)
+          .set({ threadId })
+          .where(eq(messages.id, userMessageResult[0].id))
+      ]);
     } else {
       try {
         thread = await openai.beta.threads.retrieve(threadId);
@@ -133,11 +136,20 @@ User Message: ${userMessage}`;
       const lastMessage = threadMessages.data[0];
 
       if (lastMessage && lastMessage.content[0].type === 'text') {
+        // Get run details to extract token usage
+        const runInfo = await openai.beta.threads.runs.retrieve(
+          threadId,
+          run.id
+        );
+
         await db.insert(messages).values({
           role: 'assistant',
           content: lastMessage.content[0].text.value,
           threadId: threadId,
-          createdAt: new Date()
+          createdAt: new Date(),
+          completionId: run.id,
+          inputTokens: runInfo.usage?.prompt_tokens || null,
+          outputTokens: runInfo.usage?.completion_tokens || null
         });
 
         // Update tea session after storing assistant message
@@ -149,7 +161,10 @@ User Message: ${userMessage}`;
 
         return json({
           message: lastMessage.content[0].text.value,
-          threadId: threadId
+          threadId: threadId,
+          inputTokens: runInfo.usage?.prompt_tokens || null,
+          outputTokens: runInfo.usage?.completion_tokens || null,
+          completionId: run.id
         });
       }
       return json({ error: 'No response from assistant' }, { status: 500 });

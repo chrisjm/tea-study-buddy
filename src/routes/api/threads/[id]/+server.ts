@@ -50,7 +50,10 @@ export const GET: RequestHandler = async ({ params }) => {
       threadId,
       messages: threadMessages.map(msg => ({
         role: msg.role,
-        content: msg.content
+        content: msg.content,
+        inputTokens: msg.inputTokens || undefined,
+        outputTokens: msg.outputTokens || undefined,
+        completionId: msg.completionId || undefined
       }))
     });
   } catch (error) {

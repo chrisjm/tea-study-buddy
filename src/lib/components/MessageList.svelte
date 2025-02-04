@@ -66,6 +66,16 @@
           {#if message.role === 'assistant'}
             <div class="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-pre:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-headings:text-gray-900 dark:prose-headings:text-white prose-a:text-blue-600 dark:prose-a:text-blue-400">
               {@html formatMessage(message.content)}
+              {#if message.inputTokens || message.outputTokens}
+                <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  {#if message.inputTokens}
+                    <span class="mr-3">Input tokens: {message.inputTokens}</span>
+                  {/if}
+                  {#if message.outputTokens}
+                    <span>Output tokens: {message.outputTokens}</span>
+                  {/if}
+                </div>
+              {/if}
             </div>
           {:else}
             <div class="whitespace-pre-wrap">{message.content}</div>
