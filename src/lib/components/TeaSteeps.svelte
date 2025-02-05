@@ -26,7 +26,30 @@
 		try {
 			const response = await fetch(`/api/sessions/${sessionId}/steeps`);
 			if (!response.ok) throw new Error('Failed to fetch steeps');
-			steeps = await response.json();
+			
+			const loadedSteeps = await response.json();
+			steeps = loadedSteeps;
+
+			// If no steeps exist, create the first one automatically
+			if (steeps.length === 0) {
+				const newSteepResponse = await fetch(`/api/sessions/${sessionId}/steeps`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						temperature: null,
+						steepTimeMin: null,
+						steepTimeMax: null,
+						actualSteepTime: null,
+						notes: null
+					})
+				});
+
+				if (!newSteepResponse.ok) throw new Error('Failed to create initial steep');
+				const addedSteep = await newSteepResponse.json();
+				steeps = [addedSteep];
+			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load steeps';
 			console.error('Error loading steeps:', e);
@@ -48,7 +71,10 @@
 			if (!response.ok) throw new Error('Failed to add steep');
 
 			const addedSteep = await response.json();
+			// Update the steeps array with the new steep
 			steeps = [...steeps, addedSteep];
+
+			// Reset the form state
 			isAddingSteep = false;
 			newSteep = {
 				temperature: null,

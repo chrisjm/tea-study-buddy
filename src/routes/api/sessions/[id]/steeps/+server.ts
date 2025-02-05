@@ -20,12 +20,14 @@ export const GET: RequestHandler = async ({ params }) => {
       throw error(400, 'Invalid session ID');
     }
 
+    // Check if the session exists first
     const steeps = await db
       .select()
       .from(teaSteeps)
       .where(eq(teaSteeps.teaSessionId, sessionId))
       .orderBy(teaSteeps.steepNumber);
 
+    // Always return an array, even if empty
     return json(steeps.map(steep => ({
       id: steep.id.toString(),
       teaSessionId: steep.teaSessionId.toString(),
@@ -38,11 +40,13 @@ export const GET: RequestHandler = async ({ params }) => {
       createdAt: steep.createdAt.toISOString(),
       updatedAt: steep.updatedAt?.toISOString()
     })));
-  } catch (error) {
-    return new Response(JSON.stringify({ error: 'Error fetching tea steeps:' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+  } catch (e) {
+    // Only throw an error for invalid session ID, otherwise return an empty array
+    if (e instanceof Error && e.message === 'Invalid session ID') {
+      throw error(400, e.message);
+    }
+    console.error('Error fetching steeps:', e);
+    return json([]);
   }
 };
 
