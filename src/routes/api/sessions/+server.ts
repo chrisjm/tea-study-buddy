@@ -17,8 +17,6 @@ export const GET: RequestHandler = async () => {
       createdAt: session.createdAt.toISOString(),
       teaType: session.teaType,
       teaStyle: session.teaStyle,
-      brewingTemp: session.brewingTemp,
-      steepTime: session.steepTime,
       notes: session.notes
     })));
   } catch (error) {
@@ -37,8 +35,6 @@ export const POST: RequestHandler = async ({ request }) => {
         threadId: body.threadId,
         teaType: body.teaType,
         teaStyle: body.teaStyle,
-        brewingTemp: body.brewingTemp || null,
-        steepTime: body.steepTime || null,
         notes: body.notes || null,
         createdAt: new Date()
       })
@@ -50,8 +46,6 @@ export const POST: RequestHandler = async ({ request }) => {
       createdAt: newSession[0].createdAt.toISOString(),
       teaType: newSession[0].teaType,
       teaStyle: newSession[0].teaStyle,
-      brewingTemp: newSession[0].brewingTemp,
-      steepTime: newSession[0].steepTime,
       notes: newSession[0].notes
     });
   } catch (error) {

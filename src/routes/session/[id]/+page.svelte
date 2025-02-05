@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import Chat from '$lib/components/Chat.svelte';
+	import TeaSteeps from '$lib/components/TeaSteeps.svelte';
 	import { goto } from '$app/navigation';
 
 	let session: TeaSession | null = null;
@@ -18,8 +19,6 @@
 				id: data.id,
 				teaType: data.teaType,
 				teaStyle: data.teaStyle,
-				brewingTemp: data.brewingTemp,
-				steepTime: data.steepTime,
 				notes: data.notes,
 				threadId: data.threadId,
 				createdAt: data.createdAt
@@ -79,11 +78,18 @@
 			</div>
 		</div>
 	{:else if session}
-		<div
-			class="flex flex-1 flex-col overflow-hidden rounded-lg bg-white shadow-lg transition-colors duration-200 dark:bg-gray-800"
-		>
-			<div class="flex-1 overflow-hidden">
-				<Chat teaSession={session} />
+		<div class="grid flex-1 gap-4 lg:grid-cols-2">
+			<div
+				class="flex flex-col overflow-hidden rounded-lg bg-white shadow-lg transition-colors duration-200 dark:bg-gray-800"
+			>
+				<div class="flex-1 overflow-hidden">
+					<Chat teaSession={session} />
+				</div>
+			</div>
+			<div
+				class="flex flex-col overflow-hidden rounded-lg bg-white p-4 shadow-lg transition-colors duration-200 dark:bg-gray-800"
+			>
+				<TeaSteeps sessionId={session.id} />
 			</div>
 		</div>
 	{/if}

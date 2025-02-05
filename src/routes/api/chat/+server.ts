@@ -92,8 +92,6 @@ export const POST: RequestHandler = async ({ request }) => {
         currentMessage = `Context: This conversation is about a tea session with the following details:
 Tea Type: ${teaSession.teaType}
 Tea Style: ${teaSession.teaStyle}
-${teaSession.brewingTemp ? `Brewing Temperature: ${teaSession.brewingTemp}°C` : ''}
-${teaSession.steepTime ? `Steep Time: ${teaSession.steepTime} seconds` : ''}
 ${teaSession.notes ? `Notes: ${teaSession.notes}` : ''}
 
 User Message: ${userMessage}`;

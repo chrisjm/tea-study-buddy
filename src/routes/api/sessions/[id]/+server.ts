@@ -26,8 +26,6 @@ export const GET: RequestHandler = async ({ params }) => {
       id: session[0].id,
       teaType: session[0].teaType,
       teaStyle: session[0].teaStyle,
-      brewingTemp: session[0].brewingTemp ?? undefined,
-      steepTime: session[0].steepTime ?? undefined,
       notes: session[0].notes ?? undefined,
       threadId: session[0].threadId ?? undefined,
       createdAt: session[0].createdAt
@@ -101,8 +99,6 @@ export const PUT: RequestHandler = async ({ params, request }) => {
       id: updatedSession[0].id,
       teaType: updatedSession[0].teaType,
       teaStyle: updatedSession[0].teaStyle,
-      brewingTemp: updatedSession[0].brewingTemp ?? undefined,
-      steepTime: updatedSession[0].steepTime ?? undefined,
       notes: updatedSession[0].notes ?? undefined,
       threadId: updatedSession[0].threadId ?? undefined,
       updatedAt: updatedSession[0].updatedAt ?? undefined,

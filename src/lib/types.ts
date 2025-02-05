@@ -1,11 +1,22 @@
 // Database Models
+export interface TeaSteep {
+  id: number;
+  teaSessionId: number;
+  steepNumber: number;
+  temperature?: number | null;
+  steepTimeMin?: number | null;
+  steepTimeMax?: number | null;
+  actualSteepTime?: number | null;
+  notes?: string | null;
+  createdAt: Date;
+  updatedAt?: Date | null;
+}
+
 export interface TeaSession {
   id: number;
   threadId?: string | null;
   teaType: string;
   teaStyle: string;
-  brewingTemp?: number | null;
-  steepTime?: number | null;
   notes?: string | null;
   createdAt: Date;
   updatedAt?: Date | null;
