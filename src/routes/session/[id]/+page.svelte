@@ -36,8 +36,8 @@
 	};
 </script>
 
-<div class="container mx-auto flex h-screen flex-col px-4 py-4">
-	<header class="mb-4 flex items-center justify-between">
+<div class="container mx-auto flex h-screen flex-col px-4 py-4 overflow-hidden">
+	<header class="flex items-center justify-between">
 		<button
 			on:click={handleBack}
 			class="flex items-center text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
@@ -78,18 +78,20 @@
 			</div>
 		</div>
 	{:else if session}
-		<div class="grid flex-1 gap-4 lg:grid-cols-2">
-			<div
-				class="flex flex-col overflow-hidden rounded-lg bg-white shadow-lg transition-colors duration-200 dark:bg-gray-800"
-			>
-				<div class="flex-1 overflow-hidden">
-					<Chat teaSession={session} />
-				</div>
-			</div>
+		<div class="mt-4 grid flex-1 gap-4 overflow-hidden lg:grid-cols-2">
 			<div
 				class="flex flex-col overflow-hidden rounded-lg bg-white p-4 shadow-lg transition-colors duration-200 dark:bg-gray-800"
 			>
-				<TeaSteeps sessionId={session.id} />
+				<div class="overflow-auto">
+					<TeaSteeps sessionId={session.id} />
+				</div>
+			</div>
+			<div
+				class="flex flex-col overflow-hidden rounded-lg bg-white shadow-lg transition-colors duration-200 dark:bg-gray-800"
+			>
+				<div class="flex-1 overflow-auto">
+					<Chat teaSession={session} />
+				</div>
 			</div>
 		</div>
 	{/if}
