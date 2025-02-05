@@ -5,8 +5,6 @@ export const teaSessions = sqliteTable('tea_sessions', {
   threadId: text('thread_id').unique(),
   teaType: text('tea_type').notNull(),
   teaStyle: text('tea_style').notNull(),
-  brewingTemp: integer('brewing_temp'),
-  steepTime: integer('steep_time'),
   notes: text('notes'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' })

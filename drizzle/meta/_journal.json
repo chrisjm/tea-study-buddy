@@ -15,6 +15,13 @@
       "when": 1738647562272,
       "tag": "0001_sleepy_nightmare",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1738734068763,
+      "tag": "0002_fuzzy_deadpool",
+      "breakpoints": true
     }
   ]
 }
